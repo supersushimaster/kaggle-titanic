@@ -43,10 +43,11 @@ jobs:
         run: |
           echo "${FILES}"
           filtered=$(echo "${FILES}" | \
-            tr ',' '\n' | \
+            tr ',' | \
             grep '^notebooks/models' | \
-            grep -v '^notebooks/models/.*ipynb_checkpoints/')
-          echo "files=$(echo $filtered | paste -sd ',' -)" >> "${GITHUB_OUTPUT}"
+            grep -v '^notebooks/models/.*ipynb_checkpoints/' | \
+            paste -sd ',' -)
+          echo "files=$(echo $filtered)" >> "${GITHUB_OUTPUT}"
 
       - env:
           FILES: ${{ steps.filter-files.outputs.files }}
