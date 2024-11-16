@@ -4,11 +4,11 @@ run-name: Handling A Push Requiring Submission By @${{ github.actor }}
 # リモートのmainブランチへ、submitするノートブックがプッシュされた時に、自動でsubmitします。
 # 何らかの理由でsubmitできなかった場合、ノートブックをsubmission待ちのリストに追加します。
 # リストに追加されたノートブックは、手動のワークフローでsubmitするか、翌朝9時の自動submissionを待ちます。
-#
+
 on: 
   push:
     branches: [main]
-    #paths: ['notebooks/models/*/*.ipynb'] # models/**.ipynb のような指定では、チェックポイントファイルを除外できない。
+    paths: ['notebooks/models/*/*.ipynb'] # models/**.ipynb のような指定では、チェックポイントファイルを除外できない。
 
 defaults:
   run:
@@ -17,15 +17,42 @@ defaults:
 jobs:
   specify-notebooks:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
-      - name: tanomu
+
+      - id: get-files
+        name: Get all added/modified files via API
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
         run: |
-          echo "Fetching modified and added files via GitHub API..."
-          curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          curl -s -H "Authorization: Bearer ${TOKEN}" \
             -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.event.after }} \
-            | jq -r '.files[] | select(.status == "added" or .status == "modified") | .filename'
-      - name: Output pusher
+            https://api.github.com/repos/${REPO}/compare/${BEFORE}...AFTER \
+            | jq -r '.files[] \
+            | select(.status == "added" or .status == "modified") \
+            | .filename' | paste -sd "," -)
+          echo "files=$files" >> "${GITHUB_OUTPUT}"
+
+      - id: filter-files
+        name: Filter files under the model directory
+        env:
+          FILES: ${{ steps.get-files.outputs.files }}
+        run: |
+          echo "${FILES}"
+          filtered=$(echo "${FILES}" \
+            | tr ',' '\n' \
+            | grep '^notebooks/models' \
+            | grep -v '^notebooks/models/.*ipynb_checkpoints/')
+          echo "files=$(echo $filtered | paste -sd ',' -)" >> "${GITHUB_OUTPUT}"
+
+      - env:
+          FILES: ${{ steps.filter-files.outputs.files }}
+        run: echo "${FILES}"
+
+      - name: Output pushers
         run: |
           echo "Pusher: ${{ github.actor }}"
