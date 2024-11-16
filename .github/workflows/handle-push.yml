@@ -1,0 +1,24 @@
+name: Handling Pushes Requiring Submission
+run-name: Handling A Push Requiring Submission By @${{ github.actor }}
+
+# リモートのmainブランチへ、submitするノートブックがプッシュされた時に、自動でsubmitします。
+# 何らかの理由でsubmitできなかった場合、ノートブックをsubmission待ちのリストに追加します。
+# リストに追加されたノートブックは、手動のワークフローでsubmitするか、翌朝9時の自動submissionを待ちます。
+
+on: 
+  push:
+    branches: [main]
+    paths: ['notebooks/models/*/*.ipynb'] # models/**.ipynb のような指定では、チェックポイントファイルを除外できない。
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  specify-notebooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "${{ github.event.commits.*.added }}"
+      - run: echo "${{ github.event.commits.*.modified }}"
+      - run: echo "${{ github.event.pusher.username }}"
