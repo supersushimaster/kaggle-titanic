@@ -19,19 +19,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          echo "Added:"
-          for commit in ${{ toJson(github.event.commits) }}; do
-            for file in "${commit.added}"; do
-              echo "${file}"
-            done
+      - name: List added files
+        run: |
+          echo "Added files:"
+          for file in ${{ toJson(github.event.commits) }}; do
+            echo $file
           done
-      - run: |
-          echo "Modified:"
+      - name: List modified files
+        run: |
+          echo "Modified files:"
           for commit in ${{ toJson(github.event.commits) }}; do
-            for file in "${commit.modified}"; do
-              echo "${file}"
-            done
+            echo $commit.modified
           done
-      - run: |
+      - name: Output pusher
+        run: |
           echo "Pusher: ${{ github.actor }}"
