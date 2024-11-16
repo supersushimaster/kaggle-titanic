@@ -32,9 +32,8 @@ jobs:
           files=$(curl -s -H "Authorization: Bearer ${TOKEN}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${REPO}/compare/${BEFORE}...${AFTER} | \
-            jq -r '.files[] | \
-            select(.status == "added" or .status == "modified") | \
-            .filename' | paste -sd "," -)
+            jq -r '.files[] | select(.status == "added" or .status == "modified") | .filename' | \
+            paste -sd "," -)
           echo "files=$files" >> "${GITHUB_OUTPUT}"
 
       - id: filter-files
