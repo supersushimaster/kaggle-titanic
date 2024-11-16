@@ -19,11 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: com
+      - name: tanomu
         run: |
-          echo "Compare:"
-          echo "${{ github.event.compare }}"
-        continue-on-error: true
+          echo "Fetching modified and added files via GitHub API..."
+          curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.event.after }} \
+            | jq -r '.files[] | select(.status == "added" or .status == "modified") | .filename'
       - name: Output pusher
         run: |
           echo "Pusher: ${{ github.actor }}"
