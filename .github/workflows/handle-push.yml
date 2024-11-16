@@ -8,7 +8,7 @@ run-name: Handling A Push Requiring Submission By @${{ github.actor }}
 on: 
   push:
     branches: [main]
-    paths: ['notebooks/models/*/*.ipynb'] # models/**.ipynb のような指定では、チェックポイントファイルを除外できない。
+    #paths: ['notebooks/models/*/*.ipynb'] # models/**.ipynb のような指定では、チェックポイントファイルを除外できない。
 
 defaults:
   run:
