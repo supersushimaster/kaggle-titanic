@@ -4,7 +4,7 @@ run-name: Handling A Push Requiring Submission By @${{ github.actor }}
 # リモートのmainブランチへ、submitするノートブックがプッシュされた時に、自動でsubmitします。
 # 何らかの理由でsubmitできなかった場合、ノートブックをsubmission待ちのリストに追加します。
 # リストに追加されたノートブックは、手動のワークフローでsubmitするか、翌朝9時の自動submissionを待ちます。
-
+#
 on: 
   push:
     branches: [main]
