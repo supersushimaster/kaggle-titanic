@@ -33,7 +33,7 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${REPO}/compare/${BEFORE}...${AFTER} | \
             jq -r '.files[] | select(.status == "added" or .status == "modified") | .filename' | \
-            paste -sd "," -)
+            paste -sd "\n" -)
           echo "files=$files" >> "${GITHUB_OUTPUT}"
 
       - id: filter-files
@@ -43,10 +43,9 @@ jobs:
         run: |
           echo "${FILES}"
           filtered=$(echo "${FILES}" | \
-            tr ',' '\n' | \
             grep '^notebooks/models' | \
             grep -v '^notebooks/models/.*ipynb_checkpoints/' | \
-            paste -sd ',' -)
+            paste -sd '\n' -)
           echo "files=$(echo $filtered)" >> "${GITHUB_OUTPUT}"
 
       - env:
