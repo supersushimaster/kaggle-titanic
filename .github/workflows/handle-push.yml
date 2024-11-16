@@ -22,16 +22,12 @@ jobs:
       - name: List added files
         run: |
           echo "Added files:"
-          echo '${{ toJson(github.event.commits) }}' 
-          | jq -r '.[].added[]' 
-          || echo "No files added."
+          echo '${{ toJson(github.event.commits) }}' | jq -r '.[].added[]' || echo "No files added."
         continue-on-error: true
       - name: List modified files
         run: |
           echo "Modified files:"
-          echo '${{ toJson(github.event.commits) }}' 
-          | jq -r '.[].modified[]' 
-          || echo "No files modified."
+          echo '${{ toJson(github.event.commits) }}' | jq -r '.[].modified[]' || echo "No files modified."
         continue-on-error: true
       - name: Output pusher
         run: |
