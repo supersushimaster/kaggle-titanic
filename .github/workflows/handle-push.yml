@@ -19,15 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: List added files
+      - name: com
         run: |
-          echo "Added files:"
-          echo '${{ toJson(github.event.commits) }}' | jq -r '.[].added[]' || echo "No files added."
-        continue-on-error: true
-      - name: List modified files
-        run: |
-          echo "Modified files:"
-          echo '${{ toJson(github.event.commits) }}' | jq -r '.[].modified[]' || echo "No files modified."
+          echo "Compare:"
+          echo "${{ github.event.compare }}"
         continue-on-error: true
       - name: Output pusher
         run: |
