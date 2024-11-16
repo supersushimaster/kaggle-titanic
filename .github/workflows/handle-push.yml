@@ -43,7 +43,7 @@ jobs:
         run: |
           echo "${FILES}"
           filtered=$(echo "${FILES}" | \
-            tr ',' | \
+            tr ',' '\n' | \
             grep '^notebooks/models' | \
             grep -v '^notebooks/models/.*ipynb_checkpoints/' | \
             paste -sd ',' -)
