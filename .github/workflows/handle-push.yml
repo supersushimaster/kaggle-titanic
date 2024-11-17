@@ -87,6 +87,6 @@ jobs:
 
       - id: submit
         name: Submit by an Action
-        uses: .github/actions/submission/
+        uses: ./.github/actions/submission/
         with:
           notebooks: ${{ needs.specify-notebooks.outputs.to_submit }}
