@@ -46,7 +46,8 @@ runs:
         printf "grouped=%s\n" "${grouped}" >> "${GITHUB_OUTPUT}"
         printf "usernames=%s\n" "${usernames}" >> "${GITHUB_OUTPUT}"
 
-    - name: Submit by each user
+    - id: submit
+      name: Submit by each user
       shell: bash
       env:
         USERNAMES: ${{ toJSON(steps.limit-and-group.outputs.usernames) }}
@@ -60,6 +61,7 @@ runs:
         GROUPED=$(echo "${GROUPED}" | jq -r)
         TOKENS=$(echo "${TOKENS}" | jq -r)
         USERNAMES=$(echo $USERNAMES | jq -c -r '.[]')
+        count=0
         for USERNAME in ${USERNAMES}; do
           NOTEBOOKS=$(echo "${GROUPED}" | jq -c -r --arg USERNAME "${USERNAME}" '.[$USERNAME][]')
           TOKEN=$(echo "${TOKENS}" | jq -c -r --arg USERNAME "${USERNAME}" '.[] | select(.[$USERNAME]) | .[$USERNAME]' | tr -d ' ')
@@ -68,10 +70,22 @@ runs:
           chmod 600 ~/.kaggle/kaggle.json
           for NOTEBOOK in ${NOTEBOOKS}; do
             kaggle competitions submit -c "${COMPETITION}" -f "${NOTEBOOK}" -m "${MESSAGE}"
+            ((count++))
           done
-          printf "Submissions of notebooks by %s compeleted!\n" "${USERNAME}"
+        printf "Submissions of notebooks by %s compeleted!\n" "${USERNAME}"
         done
         echo "Submissions compeleted!"
+        echo "num_submission=${count}" >> "${GITHUB_OUTPUT}"
+    
+    - name: Update the number of available submissions
+      if: ${{ steps.limit-and-group.outcome == 'sucess' }}
+      env:
+        SUBTRACTED: ${{ steps.how-many.outputs.result }}
+        SUBTRANCTOR: ${{ steps.submit.outputs.num_submissions }}
+      shell: bash
+      run:
+        UPDATED=$((SUBTRUCTED-SUBTRANCTOR))
+        echo "${UPDATED}" > .scripts/workflows/available_submissions.txt
 
     - name: Already submitted 5 notebooks today
       if: ${{ steps.limit-and-group.outcome == 'skipped' }}
