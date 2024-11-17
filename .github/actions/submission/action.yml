@@ -56,6 +56,9 @@ runs:
         MESSAGE: "Submission by GitHub Actions"
       run: |
         pip install Kaggle
+        USERNAMES=$(echo "${USERNAMES}" | jq -r)
+        GROUPED=$(echo "${GROUPED}" | jq -r)
+        TOKENS=$(echo "${TOKENS}" | jq -r)
         echo "Debug: USERNAMES=${USERNAMES}"
         echo "Debug: GROUPED=${GROUPED}"
         echo "Debug: TOKENS=${TOKENS}"
