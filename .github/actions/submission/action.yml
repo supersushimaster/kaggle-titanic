@@ -56,10 +56,13 @@ runs:
         MESSAGE: "Submission by GitHub Actions"
       run: |
         pip install Kaggle
-        USERNAMES=$(echo $USERNAMES | jq -r '.[]')
+        echo "Debug: USERNAMES=${USERNAMES}"
+        echo "Debug: GROUPED=${GROUPED}"
+        echo "Debug: TOKENS=${TOKENS}"
+        USERNAMES=$(echo $USERNAMES | jq -c -r '.[]')
         for USERNAME in ${USERNAMES}; do
-          NOTEBOOKS=$(echo "${GROUPED}" | jq -r --arg USERNAME "${USERNAME}" '.[$USERNAME][]')
-          TOKEN=$(echo "${TOKENS}" | jq -r --arg USERNAME "${USERNAME}" '.[] | select(.[$USERNAME]) | .[$USERNAME]')
+          NOTEBOOKS=$(echo "${GROUPED}" | jq -c -r --arg USERNAME "${USERNAME}" '.[$USERNAME][]')
+          TOKEN=$(echo "${TOKENS}" | jq -c -r --arg USERNAME "${USERNAME}" '.[] | select(.[$USERNAME]) | .[$USERNAME]')
           echo "${TOKENS}" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
           for NOTEBOOK in ${NOTEBOOKS}; do
