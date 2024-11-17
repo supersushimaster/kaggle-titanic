@@ -79,7 +79,7 @@ runs:
         printf "Submissions of notebooks by %s compeleted!\n" "${USERNAME}"
         done
         echo "Submissions compeleted!"
-        echo "num_submission=${count}" >> "${GITHUB_OUTPUT}"
+        echo "num_submissions=${count}" >> "${GITHUB_OUTPUT}"
     
     - name: Update the number of available submissions
       if: ${{ steps.limit-and-group.outcome == 'success' }}
