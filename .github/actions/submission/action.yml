@@ -81,12 +81,12 @@ runs:
       if: ${{ steps.limit-and-group.outcome == 'success' }}
       env:
         SUBTRACTED: ${{ steps.how-many.outputs.result }}
-        SUBTRANCTOR: ${{ steps.submit.outputs.num_submissions }}
+        SUBTRACTOR: ${{ steps.submit.outputs.num_submissions }}
       shell: bash
-      run:
+      run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        UPDATED=$(( SUBTRUCTED - SUBTRANCTOR ))
+        UPDATED=$(( SUBTRACTED - SUBTRACTOR ))
         echo "${UPDATED}" > .scripts/workflows/available_submissions.txt
         git add .scripts/workflows/available_submissions.txt
         git commit -m "The number of available submissions declined."
