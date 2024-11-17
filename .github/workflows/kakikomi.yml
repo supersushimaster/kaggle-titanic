@@ -4,7 +4,6 @@ on: workflow_dispatch
 defaults:
   run:
     shell: bash
-#
 
 jobs:
   kakikomi:
@@ -29,4 +28,4 @@ jobs:
           git add .
           git commit -m "nekosanjou"
           git push origin main
-          echo result
+          echo "${result}"
