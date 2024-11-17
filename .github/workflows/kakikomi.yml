@@ -16,5 +16,15 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
+      - name: Configure git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
       - name: RENSHU
-        run: python .scripts/workflows/sample3.py
+        env:
+          GITHUB_TOKEN : ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python .scripts/workflows/sample3.py
+          git add .
+          git commit -m "nekosanjou"
+          git push origin main
