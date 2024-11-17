@@ -18,7 +18,7 @@ jobs:
   specify-notebooks: # コミット内容からsubmissionが必要なノートブックを特定します。
     runs-on: ubuntu-latest
     permissions:
-      actions: read
+      actions: write
       contents: write
     timeout-minutes: 3
     steps:
