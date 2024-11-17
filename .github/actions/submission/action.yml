@@ -89,6 +89,8 @@ runs:
         GITHUB_TOKEN: ${{ inputs.gh-token }}
       shell: bash
       run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
         UPDATED=$(( SUBTRACTED - SUBTRACTOR ))
         echo "${UPDATED}" > .scripts/workflows/available_submissions.txt
         git add .scripts/workflows/available_submissions.txt
