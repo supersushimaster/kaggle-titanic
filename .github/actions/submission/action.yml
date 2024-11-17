@@ -70,7 +70,7 @@ runs:
           chmod 600 ~/.kaggle/kaggle.json
           for NOTEBOOK in ${NOTEBOOKS}; do
             kaggle competitions submit -c "${COMPETITION}" -f "${NOTEBOOK}" -m "${MESSAGE}"
-            ((count++))
+            count=$((count + 1))
           done
         printf "Submissions of notebooks by %s compeleted!\n" "${USERNAME}"
         done
@@ -84,7 +84,7 @@ runs:
         SUBTRANCTOR: ${{ steps.submit.outputs.num_submissions }}
       shell: bash
       run:
-        UPDATED=$((SUBTRUCTED-SUBTRANCTOR))
+        UPDATED=$(( SUBTRUCTED - SUBTRANCTOR ))
         echo "${UPDATED}" > .scripts/workflows/available_submissions.txt
 
     - name: Already submitted 5 notebooks today
