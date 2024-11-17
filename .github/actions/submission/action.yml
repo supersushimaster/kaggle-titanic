@@ -78,14 +78,19 @@ runs:
         echo "num_submission=${count}" >> "${GITHUB_OUTPUT}"
     
     - name: Update the number of available submissions
-      if: ${{ steps.limit-and-group.outcome == 'sucess' }}
+      if: ${{ steps.limit-and-group.outcome == 'success' }}
       env:
         SUBTRACTED: ${{ steps.how-many.outputs.result }}
         SUBTRANCTOR: ${{ steps.submit.outputs.num_submissions }}
       shell: bash
       run:
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
         UPDATED=$(( SUBTRUCTED - SUBTRANCTOR ))
         echo "${UPDATED}" > .scripts/workflows/available_submissions.txt
+        git add .scripts/workflows/available_submissions.txt
+        git commit -m "The number of available submissions declined."
+        git push origin main
 
     - name: Already submitted 5 notebooks today
       if: ${{ steps.limit-and-group.outcome == 'skipped' }}
