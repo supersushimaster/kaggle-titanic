@@ -40,7 +40,6 @@ import sys
 import json
 
 def check_notebook(path: str) -> bool:
-    path = ''.join(['../', path])
     try:
         with open(path, 'r', encoding='utf-8') as f:
             notebook = nbformat.read(f, as_version=4)
