@@ -15,11 +15,18 @@ defaults:
     shell: bash
 
 jobs:
-  specify-notebooks:
+  specify-notebooks: # コミット内容からsubmissionが必要なノートブックを特定します。
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
 
       - id: get-files
         name: Get all added/modified files via API
@@ -37,22 +44,22 @@ jobs:
           echo "files=$files" >> "${GITHUB_OUTPUT}"
 
       - id: filter-files
-        name: Filter files under the model directory
+        name: Filter files under notebooks/model/
         env:
           FILES: ${{ steps.get-files.outputs.files }}
         run: |
           echo "${FILES}"
           filtered=$(echo "${FILES}" | \
             tr ',' '\n' | \
-            grep '^notebooks/models' | \
-            grep -v '^notebooks/models/.*ipynb_checkpoints/' | \
-            paste -sd ',' -)
+            grep '^notebooks/models.*\.ipynb$' | grep -v 'checkpoint' | \
+            paste -sd ' ' -)
           echo "files=$(echo $filtered)" >> "${GITHUB_OUTPUT}"
 
-      - env:
+      - name: Filter notebooks completely and save to waiting_submission.jsonl
+        env:
           FILES: ${{ steps.filter-files.outputs.files }}
-        run: echo "${FILES}"
-
-      - name: Output pushers
+          USERNAME: ${{ github.actor }}
         run: |
-          echo "Pusher: ${{ github.actor }}"
+            echo "${FILES}"
+            pip install nbformat
+            python .scripts/workflows/filter_notebooks.py ${USERNAME} ${FILES}
