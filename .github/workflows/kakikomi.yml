@@ -8,9 +8,7 @@ defaults:
 jobs:
   kakikomi:
     runs-on: ubuntu-latest
-    permissions:
-      actions: write
-      contents: write
+    permissions: write-all
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
