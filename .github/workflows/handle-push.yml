@@ -8,7 +8,7 @@ run-name: Handling A Push Requiring Submission By @${{ github.actor }}
 on: 
   push:
     branches: [main]
-    paths: ['notebooks/models/*/*.ipynb'] # models/**.ipynb のような指定では、チェックポイントファイルを除外できない。
+    paths: ['notebooks/models/**.ipynb']
 
 defaults:
   run:
@@ -18,7 +18,6 @@ jobs:
   specify-notebooks: # コミット内容からsubmissionが必要なノートブックを特定します。
     runs-on: ubuntu-latest
     permissions:
-      actions: write
       contents: write
     timeout-minutes: 3
     steps:
@@ -43,7 +42,7 @@ jobs:
             https://api.github.com/repos/${REPO}/compare/${BEFORE}...${AFTER} | \
             jq -r '.files[] | select(.status == "added" or .status == "modified") | .filename' | \
             paste -sd "," -)
-          echo "files=$files" >> "${GITHUB_OUTPUT}"
+          printf "files=%s\n" "${files}" >> "${GITHUB_OUTPUT}"
 
       - id: filter-files
         name: Filter files under notebooks/model/
@@ -55,13 +54,39 @@ jobs:
             tr ',' '\n' | \
             grep '^notebooks/models.*\.ipynb$' | grep -v 'checkpoint' | \
             paste -sd ' ' -)
-          echo "files=$(echo $filtered)" >> "${GITHUB_OUTPUT}"
+          printf "files=%s\n" "${filtered}" >> "${GITHUB_OUTPUT}"
 
-      - name: Filter notebooks completely and save to waiting_submission.jsonl
+      - id: run-script
+        name: Filter notebooks completely and save to waiting_submission.jsonl
         env:
           FILES: ${{ steps.filter-files.outputs.files }}
           USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-            echo "${FILES}"
-            pip install nbformat
-            python .scripts/workflows/filter_notebooks.py ${USERNAME} ${FILES}
+          echo "${FILES}"
+          pip install nbformat
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          to_submit=$(python .scripts/workflows/filter_notebooks.py ${USERNAME} ${FILES})
+          git add .
+          git commit -m "Filter_notebooks.py updated files."
+          git push origin main
+          printf "to_submit=%s\n" "${to_submit}" >> "${GITHUB_OUTPUT}"
+    outputs:
+      to_submit: ${{ steps.run-script.outputs.to_submit }}
+
+  submit: # 前のジョブから受け取った情報に基づいてsubmitします。
+    runs-on: ubuntu-latest
+    needs: [specify-notebooks]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - id: submit
+        name: Submit by an Action
+        uses: .github/actions/submission/
+        with:
+          notebooks: ${{ needs.specify-notebooks.outputs.to_submit }}

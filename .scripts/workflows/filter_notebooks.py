@@ -24,9 +24,8 @@
           という形のJSONオブジェクトを追加します。
 
 # 返り値
-    - Noneです。
-    - 処理の結果は waiting_submission.jsonl に書き込まれます。
-    - 他のモジュールはスクリプトの返り値を使わず、このファイルを読み取ります。
+    - 標準出力には追加したJSON配列が流され、シェルスクリプトで使います。
+    - 処理の結果は waiting_submission.jsonl に書き込まれ、submissionを行うモジュールで使います。
 
 # 必要なもの
    - notebook/models/ への読み込み権限。
@@ -44,7 +43,7 @@ def check_notebook(path: str) -> bool:
         with open(path, 'r', encoding='utf-8') as f:
             notebook = nbformat.read(f, as_version=4)
     except FileNotFoundError as e:
-        print(f"ファイルが見つかりませんでした。\n入力値 {path} はスキップされました。\n{e}")
+        print(f"ファイルが見つかりませんでした。\n入力値 {path} はスキップされました。\n{e}", file=sys.stderr)
         return False
     
     for cell in notebook.cells:
@@ -69,25 +68,24 @@ def check_notebook(path: str) -> bool:
                             if (isinstance(target, ast.Name)          # need_submission への代入では、メソッドやタプルなどを使ってはいけません。
                                 and target.id == 'need_submission'
                                 and statement.value.value is True):
-                                print(path, 'はsubmissionリストに追加されます。')
+                                print(path, 'はsubmissionリストに追加されます。', file=sys.stderr)
                                 return True
-    print('次のファイルはsubmissionリストに追加されませんでした：', path)
+    print('次のファイルはsubmissionリストに追加されませんでした：', path, file=sys.stderr)
     return False
 
 def write_waiting_submission(username: str,
                              paths: list[str]) -> None:
     with open('.scripts/workflows/waiting_submission.jsonl', 'r+', encoding='utf-8') as f:
-        print('JSONLファイルを開きました。')
+        added = []
         existing = [json.loads(line.strip()) for line in f]
-        print('existing\n', existing)
+        print('現在の.jsonlファイル：\n', existing, file=sys.stderr)
         for path in paths:
-            print('path:', path)
             new = {"username": username, "path": path}
-            print('new:', new)
             if new not in existing:
-                print('newを書き込みます。')
+                print('newを書き込みます。', file=sys.stderr)
+                added.append(new)
                 f.write(json.dumps(new) + '\n')
-        return
+    return added
 
 def main():
     if len(sys.argv) <= 2:
@@ -101,8 +99,8 @@ def main():
         if check_notebook(path):
             paths_to_submit.append(path)
     
-    write_waiting_submission(username, paths_to_submit)
-
+    added = write_waiting_submission(username, paths_to_submit)
+    print(added)
     return
 
 if __name__ == "__main__":

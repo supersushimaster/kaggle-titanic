@@ -1,0 +1,76 @@
+name: Submission
+
+description: |
+  Kaggle API を通じて、リモートリポジトリに保管されたノートブックをコンペにsubmitします。
+  プッシュ時・定時・手動の全submissionに使います。
+  ノートブックをcommitしたメンバーのアカウントからsubmitします。
+  contents: read の権限が必要です。
+  参加するコンペティションを変更するには、このActionの Submit by each user ステップの
+  $COMPETITION環境変数の値を変更してください。
+
+inputs:
+  notebooks:
+    required: true
+    description: |
+      ノートブックをsubmitするのに必要な情報のJSONオブジェクトの配列です。
+      1つのオブジェクトは「submissionするメンバーのGitHub username」と「submission対象ファイルパス」を格納しています。
+      具体的な引数の形は以下の通りです。
+        [{"username": "octocat", "path": "notebooks/models/lightgbm/lgbm001"}, {"username": "monalisa", "path": "notebooks/models/logistic/log001"}]
+  api-tokens:
+    required: true
+    description: |
+      リポジトリのSecretsに格納されている、メンバー全員のKaggle APIトークンが集められたJSON配列です。
+      1つのオブジェクトは「GitHub username」をキーとし、「『Kaggle username』と『APIキー』の辞書」を値とします。
+      具体的な引数の形は以下の通りです。
+        [{"octocat": {"username": "kaggle_octocat", "key": "00000"}}, {"monalisa": {"username": "monalisakaggler", "key": "11111"}}]
+
+runs:
+  using: composite
+  steps:
+    - id: how-many
+      name: Find how many submissions are possible up to
+      shell: bash
+      run: |
+        how_many=$(cat .scripts/workflows/available_submissions.txt | tr -d '\n')
+        echo "result=${how_many}" >> "${GITHUB_OUTPUT}"
+
+    - id: limit-and-group
+      name: Group notebooks by their usernames
+      if: ${{ steps.how-many.outputs.result != 0 }}
+      shell: bash
+      env:
+        NOTEBOOKS: ${{ inputs.notebooks }}
+      run: |
+        grouped=$(echo "${NOTEBOOKS}" | jq ".[0:$LIMIT]" | jq 'group_by(.username) | map({(.[0].username): map(.path)}) | add')
+        usernames=$(echo "${grouped}" | jq -r 'map(.username) | unique | @json')
+        printf "grouped=%s\n" "${grouped}" >> "${GITHUB_OUTPUT}"
+        printf "usernames=%s\n" "${usernames}" >> "${GITHUB_OUTPUT}"
+
+    - name: Submit by each user
+      shell: bash
+      env:
+        USERNAMES: ${{ steps.limit-and-group.outputs.usernames }}
+        GROUPED: ${{ steps.limit-and-group.outputs.grouped }}
+        TOKENS: ${{ inputs.api-tokens }}
+        COMPETITION: "titanic"
+        MESSAGE: "Submission by GitHub Actions"
+      run: |
+        pip install Kaggle
+        USERNAMES=$(echo $USERNAMES | jq -r '.[]')
+        for USERNAME in ${USERNAMES}; do
+          NOTEBOOKS=$(echo "${GROUPED}" | jq -r --arg USERNAME "${USERNAME}" '.[${USERNAME}][]')
+          TOKEN=$(echo "${TOKENS}" | jq -r --arg USERNAME "${USERNAME}" '.[] | select(.[${USERNAME}]) | .[${USERNAME}]')
+          echo "${TOKENS}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+          for ${NOTEBOOK} in ${NOTEBOOKS}; do
+            kaggle competitions submit -c "${COMPETITION}" -f "${NOTEBOOK}" -m "${MESSAGE}"
+          done
+          printf "Submissions of notebooks by %s compeleted!\n" "${USERNAME}"
+        done
+        echo "Submissions compeleted!"
+
+    - name: Already submitted 5 notebooks today
+      if: ${{ steps.limit-and-group.outcome == 'skipped' }}
+      shell: bash
+      run:
+        echo "Already submitted 5 notebooks today."
