@@ -66,6 +66,7 @@ runs:
         for USERNAME in ${USERNAMES}; do
           NOTEBOOKS=$(echo "${GROUPED}" | jq -c -r --arg USERNAME "${USERNAME}" '.[$USERNAME][]')
           TOKEN=$(echo "${TOKENS}" | jq -c -r --arg USERNAME "${USERNAME}" '.[] | select(.[$USERNAME]) | .[$USERNAME]')
+          mkdir -p ~/.kaggle
           echo "${TOKENS}" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
           for NOTEBOOK in ${NOTEBOOKS}; do
