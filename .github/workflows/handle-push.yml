@@ -73,6 +73,7 @@ jobs:
       - name: Commit
         if: ${{ steps.run-script.outputs.to_submit != '[]' }}
         run: |
+          git pull origin main
           git add .
           git commit -m "Filter_notebooks.py updated files."
           git push origin main

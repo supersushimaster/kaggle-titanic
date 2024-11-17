@@ -93,6 +93,7 @@ runs:
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         UPDATED=$(( SUBTRACTED - SUBTRACTOR ))
         echo "${UPDATED}" > .scripts/workflows/available_submissions.txt
+        git pull origin main
         git add .scripts/workflows/available_submissions.txt
         git commit -m "The number of available submissions declined."
         git push origin main
