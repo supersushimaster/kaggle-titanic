@@ -1,0 +1,22 @@
+name: Kakikomi
+on: workflow_dispatch
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  kakikomi:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: RENSHU
+        run: python .scripts/workflows/sample3.py
