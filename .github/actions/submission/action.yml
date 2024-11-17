@@ -51,7 +51,7 @@ runs:
       env:
         USERNAMES: ${{ steps.limit-and-group.outputs.usernames }}
         GROUPED: ${{ steps.limit-and-group.outputs.grouped }}
-        TOKENS: ${{ inputs.api-tokens }}
+        TOKENS: ${{ toJSON(inputs.api-tokens) }}
         COMPETITION: "titanic"
         MESSAGE: "Submission by GitHub Actions"
       run: |

@@ -100,7 +100,7 @@ def main():
             paths_to_submit.append(path)
     
     added = write_waiting_submission(username, paths_to_submit)
-    print(added)
+    print(json.dumps(added))
     return
 
 if __name__ == "__main__":
