@@ -49,8 +49,8 @@ runs:
     - name: Submit by each user
       shell: bash
       env:
-        USERNAMES: ${{ steps.limit-and-group.outputs.usernames }}
-        GROUPED: ${{ steps.limit-and-group.outputs.grouped }}
+        USERNAMES: ${{ toJSON(steps.limit-and-group.outputs.usernames) }}
+        GROUPED: ${{ toJSON(steps.limit-and-group.outputs.grouped) }}
         TOKENS: ${{ toJSON(inputs.api-tokens) }}
         COMPETITION: "titanic"
         MESSAGE: "Submission by GitHub Actions"
