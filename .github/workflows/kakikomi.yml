@@ -24,7 +24,8 @@ jobs:
         env:
           GITHUB_TOKEN : ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python .scripts/workflows/sample3.py
+          result=$(python .scripts/workflows/sample3.py)
           git add .
           git commit -m "nekosanjou"
           git push origin main
+          echo result
