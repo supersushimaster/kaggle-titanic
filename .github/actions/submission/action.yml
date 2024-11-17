@@ -58,11 +58,11 @@ runs:
         pip install Kaggle
         USERNAMES=$(echo $USERNAMES | jq -r '.[]')
         for USERNAME in ${USERNAMES}; do
-          NOTEBOOKS=$(echo "${GROUPED}" | jq -r --arg USERNAME "${USERNAME}" '.[${USERNAME}][]')
-          TOKEN=$(echo "${TOKENS}" | jq -r --arg USERNAME "${USERNAME}" '.[] | select(.[${USERNAME}]) | .[${USERNAME}]')
+          NOTEBOOKS=$(echo "${GROUPED}" | jq -r --arg USERNAME "${USERNAME}" '.[$USERNAME][]')
+          TOKEN=$(echo "${TOKENS}" | jq -r --arg USERNAME "${USERNAME}" '.[] | select(.[$USERNAME]) | .[$USERNAME]')
           echo "${TOKENS}" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
-          for ${NOTEBOOK} in ${NOTEBOOKS}; do
+          for NOTEBOOK in ${NOTEBOOKS}; do
             kaggle competitions submit -c "${COMPETITION}" -f "${NOTEBOOK}" -m "${MESSAGE}"
           done
           printf "Submissions of notebooks by %s compeleted!\n" "${USERNAME}"
