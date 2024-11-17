@@ -98,3 +98,4 @@ jobs:
         with:
           notebooks: ${{ needs.specify-notebooks.outputs.to_submit }}
           api-tokens: "[{\"supersushimaster\": ${{ secrets.supersushimaster }}}]"
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
