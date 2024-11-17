@@ -68,16 +68,22 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           to_submit=$(python .scripts/workflows/filter_notebooks.py ${USERNAME} ${FILES})
+          printf "to_submit=%s\n" "${to_submit}" >> "${GITHUB_OUTPUT}"
+      
+      - name: Commit
+        if: ${{ steps.run-script.outputs.to_submit != '[]' }}
+        run: |
           git add .
           git commit -m "Filter_notebooks.py updated files."
           git push origin main
-          printf "to_submit=%s\n" "${to_submit}" >> "${GITHUB_OUTPUT}"
+
     outputs:
       to_submit: ${{ steps.run-script.outputs.to_submit }}
 
   submit: # 前のジョブから受け取った情報に基づいてsubmitします。
     runs-on: ubuntu-latest
     needs: [specify-notebooks]
+    if: ${{ needs.specify-notebooks.outputs.to_submit != '[]' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
