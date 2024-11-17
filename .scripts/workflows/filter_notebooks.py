@@ -77,10 +77,15 @@ def check_notebook(path: str) -> bool:
 def write_waiting_submission(username: str,
                              paths: list[str]) -> None:
     with open('.scripts/workflows/waiting_submission.jsonl', 'r+', encoding='utf-8') as f:
+        print('JSONLファイルを開きました。')
         existing = [json.loads(line.strip()) for line in f]
+        print('existing\n', existing)
         for path in paths:
+            print('path:', path)
             new = {"username": username, "path": path}
+            print('new:', new)
             if new not in existing:
+                print('newを書き込みます。')
                 f.write(json.dumps(new) + '\n')
         return
 
