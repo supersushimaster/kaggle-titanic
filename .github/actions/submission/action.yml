@@ -41,8 +41,8 @@ runs:
       env:
         NOTEBOOKS: ${{ inputs.notebooks }}
       run: |
-        grouped=$(echo "${NOTEBOOKS}" | jq ".[0:$LIMIT]" | jq 'group_by(.username) | map({key: .[0].username, value: map(.path)}) | from_entries')
-        usernames=$(echo "${grouped}" | jq -r 'keys | unique | @json')
+        grouped=$(echo "${NOTEBOOKS}" | jq -c ".[0:$LIMIT]" | jq -c 'group_by(.username) | map({key: .[0].username, value: map(.path)}) | from_entries')
+        usernames=$(echo "${grouped}" | jq -c -r 'keys | unique | @json')
         printf "grouped=%s\n" "${grouped}" >> "${GITHUB_OUTPUT}"
         printf "usernames=%s\n" "${usernames}" >> "${GITHUB_OUTPUT}"
 
