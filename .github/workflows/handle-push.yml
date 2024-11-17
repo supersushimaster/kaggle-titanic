@@ -27,6 +27,8 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
+      - name: RENSHU
+        run: python .scripts/workflows/sample3.py
 
       - id: get-files
         name: Get all added/modified files via API
